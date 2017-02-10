@@ -37,7 +37,6 @@ android {
 
 dependencies {
     provided 'com.google.android.things:androidthings:0.1-devpreview'
-    compile files('classes.jar')
 }
 
 repositories {

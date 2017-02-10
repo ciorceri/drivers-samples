@@ -17,7 +17,6 @@
 package com.example.androidthings.driversamples;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -46,14 +45,15 @@ public class MainActivity extends Activity {
 
         mPioThread = new HandlerThread("pioThread");
         mPioThread.start();
-
         mHandler = new Handler(mPioThread.getLooper());
 
         try {
-            Log.d(TAG, "Initializing HX711");
             mDevice = new hx711(BoardDefaults.getSPIPort(), hx711.Gain.Gain32);
+            mDevice.setOffset(168981); //            mDevice.tare(5);
+            mDevice.calibrateUnits(140, 5);
+            mHandler.post(mReadWeight);
         } catch (IOException e) {
-            Log.e(TAG, "Error initializing HX711", e);
+            e.printStackTrace();
         }
     }
 
@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
     public void onDestroy() {
         super.onDestroy();
         // Remove pending sensor Runnable from the handler.
-        mHandler.removeCallbacks(mAnimateRunnable);
+        mHandler.removeCallbacks(mReadWeight);
         Log.d(TAG, "Closing HX711");
         try {
             mDevice.close();
@@ -70,20 +70,23 @@ public class MainActivity extends Activity {
         }
     }
 
-    private Runnable mAnimateRunnable = new Runnable() {
+    private Runnable mReadWeight = new Runnable() {
         @Override
         public void run() {
             int value = 0;
+            double units = 0;
 
             try {
-                value = mDevice.read();
+                value = mDevice.readAverage(5);
+                Log.d(TAG + " HX711 ADC read avg", "" + value);
+                units = mDevice.getUnits(5);
+                Log.d(TAG + " HX711 ADC units", "" + units);
             } catch (IOException e) {
                 Log.e(TAG, "Error while reading from HX711");
                 e.printStackTrace();
             }
-            Log.e("caca", "" + value);
 
-            mHandler.postDelayed(mAnimateRunnable, FRAME_DELAY_MS);
+            mHandler.postDelayed(mReadWeight, FRAME_DELAY_MS);
         }
     };
 
