@@ -49,8 +49,10 @@ public class MainActivity extends Activity {
 
         try {
             mDevice = new hx711(BoardDefaults.getSPIPort(), hx711.Gain.Gain32);
-            mDevice.setOffset(168981); //            mDevice.tare(5);
-            mDevice.calibrateUnits(140, 5);
+//            mDevice.tare(5);
+//            mDevice.calibrateUnits(140, 5);
+            mDevice.setOffset(200000);
+            mDevice.setScale(190.0);
             mHandler.post(mReadWeight);
         } catch (IOException e) {
             e.printStackTrace();
@@ -77,9 +79,9 @@ public class MainActivity extends Activity {
             double units = 0;
 
             try {
-                value = mDevice.readAverage(5);
+                value = mDevice.readAverage(2);
                 Log.d(TAG + " HX711 ADC read avg", "" + value);
-                units = mDevice.getUnits(5);
+                units = mDevice.getUnits(2);
                 Log.d(TAG + " HX711 ADC units", "" + units);
             } catch (IOException e) {
                 Log.e(TAG, "Error while reading from HX711");
